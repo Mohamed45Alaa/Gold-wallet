@@ -147,7 +147,7 @@ export function AutoModeGate() {
     if (showCelebration) {
         return (
             <div className="fixed inset-0 z-[9999999] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center text-center animate-in fade-in duration-500">
-                <div className="scale-150 mb-8 animate-bounce duration-[2000ms]">
+                <div className="scale-150 mb-8 animate-bounce duration-2000">
                     <div className="bg-yellow-500/20 p-8 rounded-full ring-4 ring-yellow-500/30 shadow-[0_0_100px_rgba(234,179,8,0.4)]">
                         <PartyPopper className="w-24 h-24 text-yellow-400" />
                     </div>
