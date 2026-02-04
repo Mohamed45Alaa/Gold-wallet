@@ -8,7 +8,7 @@ export function UserAuth() {
 
     // Use a fixed Z-index high enough to float above everything
     return (
-        <div className="fixed top-[22px] left-4 z-50 flex items-center h-10 md:h-auto">
+        <div className="fixed top-4 left-4 z-50">
             {!currentUser ? (
                 <button
                     onClick={signInWithGoogle}
@@ -36,7 +36,7 @@ export function UserAuth() {
                     <span>تسجيل الدخول بجوجل</span>
                 </button>
             ) : (
-                <div className="flex items-center gap-2 md:gap-3 bg-secondary/80 backdrop-blur-sm p-1 pr-3 pl-1 rounded-full border shadow-sm h-full">
+                <div className="flex items-center gap-2 md:gap-3 bg-secondary/80 backdrop-blur-sm p-1 pr-3 pl-1 rounded-full border shadow-sm h-10 md:h-auto">
                     <span className="text-xs md:text-sm font-medium text-foreground max-w-[100px] md:max-w-none truncate">{currentUser.displayName}</span>
                     {currentUser.photoURL ? (
                         <img

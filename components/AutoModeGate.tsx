@@ -242,10 +242,10 @@ export function AutoModeGate() {
         if (!currentUser) return null; // Hide if not logged in
 
         return (
-            <div className="fixed top-4 right-4 z-[50] flex items-center h-10 md:h-12">
+            <div className="fixed top-3 md:top-4 right-4 z-[50]">
                 <Button
                     onClick={() => { setIsOpen(true); setPassword(''); }} // Clear password on open
-                    className="w-auto md:w-[220px] bg-background/80 hover:bg-background/90 backdrop-blur border shadow-xl gap-2 h-full rounded-full group transition-all px-4"
+                    className="w-auto md:w-[220px] bg-background/80 hover:bg-background/90 backdrop-blur border shadow-xl gap-2 h-10 md:h-12 rounded-full group transition-all px-4"
                     variant="outline"
                 >
                     <div className="bg-muted p-1 rounded-full group-hover:bg-primary/20 transition-colors">
