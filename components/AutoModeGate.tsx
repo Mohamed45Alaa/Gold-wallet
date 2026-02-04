@@ -245,13 +245,13 @@ export function AutoModeGate() {
             <div className="fixed top-3 md:top-4 right-4 z-[50]">
                 <Button
                     onClick={() => { setIsOpen(true); setPassword(''); }} // Clear password on open
-                    className="w-auto md:w-[220px] bg-background/80 hover:bg-background/90 backdrop-blur border shadow-xl gap-2 h-10 md:h-12 rounded-full group transition-all px-4"
+                    className="mobile-header-card w-auto md:w-[220px] bg-background/80 hover:bg-background/90 backdrop-blur border shadow-xl gap-2 h-10 md:h-12 rounded-full group transition-all px-4"
                     variant="outline"
                 >
                     <div className="bg-muted p-1 rounded-full group-hover:bg-primary/20 transition-colors">
-                        <Lock className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
+                        <Lock className="mobile-header-icon w-4 h-4 text-muted-foreground group-hover:text-primary" />
                     </div>
-                    <span className="font-semibold text-xs md:text-sm text-muted-foreground group-hover:text-foreground">تفعيل تلقائي</span>
+                    <span className="mobile-header-text font-semibold text-xs md:text-sm text-muted-foreground group-hover:text-foreground">تفعيل تلقائي</span>
                 </Button>
             </div>
         );

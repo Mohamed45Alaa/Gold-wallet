@@ -136,3 +136,29 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     color: inherit;
   }
 }
+
+/* MOBILE PORTRAIT HEADER ADJUSTMENTS */
+@media (max-width: 430px) and (orientation: portrait) {
+  .mobile-header-card {
+    height: 32px !important;
+    /* 0.9 scale from h-10 (40px -> 32px) */
+    padding-left: 12px !important;
+    /* -15% from px-4 (16px -> 12px) */
+    padding-right: 12px !important;
+  }
+
+  .mobile-header-icon {
+    transform: scale(0.9);
+  }
+
+  .mobile-header-avatar {
+    width: 28px !important;
+    /* 0.9 scale from w-8 (32px -> 28px) */
+    height: 28px !important;
+  }
+
+  .mobile-header-text {
+    font-size: 0.65rem !important;
+    /* -10% from text-xs (0.75rem -> 0.65rem) */
+  }
+}

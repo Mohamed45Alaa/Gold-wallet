@@ -36,19 +36,19 @@ export function UserAuth() {
                     <span>تسجيل الدخول بجوجل</span>
                 </button>
             ) : (
-                <div className="flex items-center gap-2 md:gap-3 bg-secondary/80 backdrop-blur-sm p-1 pr-3 pl-1 rounded-full border shadow-sm h-10 md:h-auto">
-                    <span className="text-xs md:text-sm font-medium text-foreground max-w-[100px] md:max-w-none truncate">{currentUser.displayName}</span>
+                <div className="mobile-header-card flex items-center gap-2 md:gap-3 bg-secondary/80 backdrop-blur-sm p-1 pr-3 pl-1 rounded-full border shadow-sm h-10 md:h-auto">
+                    <span className="mobile-header-text text-xs md:text-sm font-medium text-foreground max-w-[100px] md:max-w-none truncate">{currentUser.displayName}</span>
                     {currentUser.photoURL ? (
                         <img
                             src={currentUser.photoURL}
                             alt={currentUser.displayName}
-                            className="w-8 h-8 rounded-full border-2 border-background cursor-pointer hover:opacity-80 transition-opacity"
+                            className="mobile-header-avatar w-8 h-8 rounded-full border-2 border-background cursor-pointer hover:opacity-80 transition-opacity"
                             onClick={logout}
                             title="Click to logout"
                         />
                     ) : (
                         <div
-                            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs cursor-pointer"
+                            className="mobile-header-avatar w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs cursor-pointer"
                             onClick={logout}
                         >
                             {currentUser.displayName?.[0]}
