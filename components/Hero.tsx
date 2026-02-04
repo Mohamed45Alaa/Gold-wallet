@@ -13,7 +13,7 @@ export function Hero() {
     if (!isHydrated) return null;
 
     return (
-        <div className="w-full py-12 flex flex-col items-center justify-center text-center space-y-4">
+        <div className="w-full pt-16 pb-12 flex flex-col items-center justify-center text-center space-y-4">
             <h2 className="text-muted-foreground text-lg md:text-xl font-medium">
                 إجمالي قيمة المحفظة
             </h2>

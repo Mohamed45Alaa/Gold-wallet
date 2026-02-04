@@ -76,6 +76,8 @@ export function RealtimeInitializer() {
     }, [setGoldBars, setCashEntries, setSettings, setHydrated, setUser, setUserMeta]);
 
     // 2. Market Data Polling (5s)
+    // 2. Market Data Polling (DISABLED - Relying on MarketTicker 30s)
+    /*
     useEffect(() => {
         const fetchGoldPrice = async () => {
             try {
@@ -94,6 +96,7 @@ export function RealtimeInitializer() {
 
         return () => clearInterval(interval);
     }, [setMarketData]);
+    */
 
     return null; // Headless component
 }

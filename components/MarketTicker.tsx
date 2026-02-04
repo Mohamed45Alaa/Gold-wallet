@@ -281,7 +281,7 @@ export function MarketTicker() {
                             <Button size="icon" className="h-8 w-8" onClick={handleSave}><Check className="w-3 h-3" /></Button>
                         </div>
                     ) : (
-                        <div className={`text-2xl md:text-3xl font-bold numeric dir-ltr z-10 relative transition-colors duration-200 ${isHighlight ? 'text-emerald-500' : ''}`}>
+                        <div className={`text-2xl md:text-3xl font-bold numeric dir-ltr z-10 relative transition-all duration-300 px-3 py-1 rounded-lg ${isHighlight ? 'bg-emerald-50 text-emerald-600' : ''}`}>
                             ${formatNumber(displayOunce)}
                         </div>
                     )}
@@ -310,7 +310,7 @@ export function MarketTicker() {
                             <Button size="icon" className="h-8 w-8" onClick={handleSave}><Check className="w-3 h-3" /></Button>
                         </div>
                     ) : (
-                        <div className="text-2xl md:text-3xl font-bold numeric dir-ltr z-10 relative">
+                        <div className={`text-2xl md:text-3xl font-bold numeric dir-ltr z-10 relative transition-all duration-300 px-3 py-1 rounded-lg ${isHighlight ? 'bg-emerald-50 text-emerald-600' : ''}`}>
                             {formatNumber(displayUsd)}
                         </div>
                     )}
