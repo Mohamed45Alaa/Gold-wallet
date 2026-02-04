@@ -1,26 +1,25 @@
 import { NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const runtime = "edge";
+export const fetchCache = 'force-no-store';
 
 export async function GET() {
     try {
         const [xauRes, usdRes] = await Promise.all([
             fetch('https://sa.investing.com/currencies/xau-usd', {
-                cache: 'no-store',
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
                     'Accept-Language': 'en-US,en;q=0.9',
-                    'Accept-Encoding': 'gzip, deflate, br',
-                    'Referer': 'https://sa.investing.com/',
+                    'Referer': 'https://www.google.com/',
                     'Sec-Fetch-Dest': 'document',
                     'Sec-Fetch-Mode': 'navigate',
                     'Sec-Fetch-Site': 'cross-site',
                     'Sec-Fetch-User': '?1',
                     'Upgrade-Insecure-Requests': '1'
-                }
+                },
+                next: { revalidate: 30 }
             }),
             fetch('https://gold-price-live.com/view/sagha-usd', {
                 headers: {
@@ -36,12 +35,6 @@ export async function GET() {
         // Parse XAU/USD
         if (xauRes.ok) {
             const html = await xauRes.text();
-
-            // Block detection
-            if (html.includes('Just a moment...') || html.includes('Security Check')) {
-                throw new Error('Blocked by Cloudflare');
-            }
-
             const $ = cheerio.load(html);
             // Selector: <div class="text-5xl/9 ... " data-test="instrument-price-last">
             const priceText = $('[data-test="instrument-price-last"]').text().trim();
