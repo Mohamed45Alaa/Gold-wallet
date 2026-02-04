@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AutoModeGate } from './AutoModeGate';
 import { differenceInDays, differenceInHours } from 'date-fns';
 
@@ -56,10 +56,38 @@ export function MarketTicker() {
         }
     }, [manualGramPrice, manualUsdPrice, manualXauPrice, editingField]);
 
-    // Unified 30s Timer - ONLY when Auto Mode is active
+    // Instant fetch when switching TO auto mode
+    const prevModeRef = useRef(priceMode);
     useEffect(() => {
-        if (!isSubActive) {
-            // Reset state when manual mode
+        const justSwitchedToAuto = priceMode === 'auto' && prevModeRef.current !== 'auto';
+
+        if (justSwitchedToAuto && !isFetching) {
+            // Immediate first fetch
+            setIsFetching(true);
+            fetch('/api/prices')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        setMarketData(data.xauPrice, data.usdRate, data.saghaPrice || 0);
+                        setIsHighlight(true);
+                        setTimeout(() => setIsHighlight(false), 1000);
+                        setTimeLeft(30); // Start countdown from 30
+                    }
+                    setIsFetching(false);
+                })
+                .catch(err => {
+                    console.error("Initial auto fetch failed", err);
+                    setIsFetching(false);
+                });
+        }
+
+        prevModeRef.current = priceMode;
+    }, [priceMode, setMarketData]);
+
+    // Unified 30s Timer - ONLY when Auto Mode is selected
+    useEffect(() => {
+        if (priceMode !== 'auto') {
+            // Reset state when manual mode selected
             setTimeLeft(30);
             setIsHighlight(false);
             setIsFetching(false);
@@ -73,12 +101,12 @@ export function MarketTicker() {
             });
         }, 1000);
         return () => clearInterval(timer);
-    }, [isSubActive]);
+    }, [priceMode]);
 
     // Fetch and Update at 0s - ONLY in Auto Mode
     useEffect(() => {
-        // Guard: Do nothing if manual mode
-        if (!isSubActive) return;
+        // Guard: Do nothing if manual mode selected
+        if (priceMode !== 'auto') return;
 
         if (timeLeft === 0 && !isFetching) {
             setIsFetching(true);
@@ -104,7 +132,7 @@ export function MarketTicker() {
                     setTimeLeft(30); // Reset even on error
                 });
         }
-    }, [timeLeft, isFetching, setMarketData, isSubActive]);
+    }, [timeLeft, isFetching, setMarketData, priceMode]);
 
     const handleSave = async () => {
         if (!currentUser) return;
@@ -203,7 +231,7 @@ export function MarketTicker() {
 
                     {/* Status Badge */}
                     <div className="flex items-center gap-2 px-3 py-1 bg-muted/50 rounded-full">
-                        {isSubActive ? (
+                        {priceMode === 'auto' ? (
                             <>
                                 <Zap className="w-4 h-4 text-emerald-500 fill-emerald-500" />
                                 <span className="text-xs font-semibold text-emerald-600">تسعير تلقائي (API)</span>
