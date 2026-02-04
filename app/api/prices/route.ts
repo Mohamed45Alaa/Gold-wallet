@@ -18,14 +18,12 @@ export async function GET() {
                     'Sec-Fetch-Site': 'cross-site',
                     'Sec-Fetch-User': '?1',
                     'Upgrade-Insecure-Requests': '1'
-                },
-                next: { revalidate: 30 }
+                }
             }),
             fetch('https://gold-price-live.com/view/sagha-usd', {
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
-                },
-                next: { revalidate: 30 }
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
             })
         ]);
 
@@ -36,9 +34,7 @@ export async function GET() {
         if (xauRes.ok) {
             const html = await xauRes.text();
             const $ = cheerio.load(html);
-            // Selector: <div class="text-5xl/9 ... " data-test="instrument-price-last">
             const priceText = $('[data-test="instrument-price-last"]').text().trim();
-            // Remove commas
             xauPrice = parseFloat(priceText.replace(/,/g, '')) || 0;
         }
 
@@ -46,15 +42,10 @@ export async function GET() {
         if (usdRes.ok) {
             const html = await usdRes.text();
             const $ = cheerio.load(html);
-            // Selector: <div style="font-size:120px;line-height:1.1;color: #1d3147;" class="mb-5">
-            // This is a bit generic style-based selector, but requested by user prompt.
-            // Trying to find the div with specifically 120px size or the specific class combo.
-            // Using a slightly robust find:
             const priceDiv = $('div.mb-5').filter((i, el) => {
                 const style = $(el).attr('style');
                 return style?.includes('font-size:120px') ?? false;
             });
-
             const priceText = priceDiv.text().trim();
             usdRate = parseFloat(priceText.replace(/,/g, '')) || 0;
         }
