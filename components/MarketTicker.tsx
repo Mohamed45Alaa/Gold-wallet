@@ -25,7 +25,8 @@ export function MarketTicker() {
         isHydrated,
         getEffectiveGramPrice,
         currentUser,
-        subscription
+        subscription,
+        setMarketData // Added Action
     } = useStore();
 
     // Computed States
@@ -41,6 +42,10 @@ export function MarketTicker() {
     const [editGram, setEditGram] = useState<string>('');
     const [editUsd, setEditUsd] = useState<string>('');
     const [editOunce, setEditOunce] = useState<string>('');
+    const [timeLeft, setTimeLeft] = useState(30);
+    const [isHighlight, setIsHighlight] = useState(false);
+    const [nextData, setNextData] = useState<any>(null); // Buffer for pre-fetched data
+    const [isFetching, setIsFetching] = useState(false);
 
     // Effect: Sync state when mode changes or data loads
     useEffect(() => {
@@ -50,6 +55,49 @@ export function MarketTicker() {
             setEditOunce(manualXauPrice?.toString() || '');
         }
     }, [manualGramPrice, manualUsdPrice, manualXauPrice, editingField]);
+
+    // Timer Loop
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    // 1. Trigger Fetch at 5s remaining
+    useEffect(() => {
+        if (timeLeft === 5 && !isFetching) {
+            setIsFetching(true);
+            fetch('/api/prices')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        setNextData(data);
+                    }
+                    setIsFetching(false);
+                })
+                .catch(err => {
+                    console.error("Prefetch failed", err);
+                    setIsFetching(false);
+                });
+        }
+    }, [timeLeft, isFetching]);
+
+    // 2. Apply Update & Reset at 0s
+    useEffect(() => {
+        if (timeLeft === 0 && nextData) {
+            // Commit the buffered data
+            setMarketData(nextData.xauPrice, nextData.usdRate, nextData.saghaPrice || 0);
+
+            // Visual Update
+            setTimeLeft(30);
+            setIsHighlight(true);
+
+            // Clean up
+            setNextData(null);
+            setTimeout(() => setIsHighlight(false), 1000);
+        }
+    }, [timeLeft, nextData, setMarketData]);
 
     const handleSave = async () => {
         if (!currentUser) return;
@@ -117,30 +165,30 @@ export function MarketTicker() {
                 <div className="md:col-span-3 flex flex-col md:flex-row justify-between items-center bg-card border rounded-lg p-3 gap-4 shadow-sm">
 
                     {/* Pricing Mode Toggle */}
-                    <div className="flex items-center gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-                        <Label className="whitespace-nowrap text-muted-foreground">نظام التسعير:</Label>
+                    {/* Pricing Mode Toggle */}
+                    <div className="flex items-center gap-4 w-full md:w-auto overflow-x-auto">
+                        <Label className="whitespace-nowrap text-muted-foreground text-xs md:text-sm">نظام التسعير:</Label>
                         <ToggleGroup
                             type="single"
                             value={priceMode}
                             onValueChange={handleModeChange}
-                            className="dir-ltr"
                         >
                             <ToggleGroupItem value="auto" aria-label="Toggle auto" disabled={!isSubActive} className={!isSubActive ? "opacity-50 grayscale pointer-events-none" : ""}>
                                 <div className="flex items-center gap-2">
-                                    <Zap className="w-4 h-4" />
-                                    <span>تلقائي (API)</span>
+                                    <Zap className="w-3 h-3 md:w-4 md:h-4" />
+                                    <span className="text-xs md:text-sm">تلقائي (API)</span>
                                 </div>
                             </ToggleGroupItem>
                             <ToggleGroupItem value="usdOunce" aria-label="Toggle usd ounce">
                                 <div className="flex items-center gap-2">
-                                    <Calculator className="w-4 h-4" />
-                                    <span>يدوي (دولار + أونصة)</span>
+                                    <Calculator className="w-3 h-3 md:w-4 md:h-4" />
+                                    <span className="text-xs md:text-sm">يدوي (دولار + أونصة)</span>
                                 </div>
                             </ToggleGroupItem>
                             <ToggleGroupItem value="manualGram" aria-label="Toggle manual gram">
                                 <div className="flex items-center gap-2">
-                                    <Gem className="w-4 h-4" />
-                                    <span>يدوي عيار 24</span>
+                                    <Gem className="w-3 h-3 md:w-4 md:h-4" />
+                                    <span className="text-xs md:text-sm">يدوي عيار 24</span>
                                 </div>
                             </ToggleGroupItem>
                         </ToggleGroup>
@@ -152,6 +200,9 @@ export function MarketTicker() {
                             <>
                                 <Zap className="w-4 h-4 text-emerald-500 fill-emerald-500" />
                                 <span className="text-xs font-semibold text-emerald-600">تسعير تلقائي (API)</span>
+                                <span className="text-xs font-mono text-emerald-600/80 border-r border-emerald-200 pr-2 mr-1 min-w-[3ch] inline-block text-center">
+                                    {timeLeft}s
+                                </span>
                             </>
                         ) : (
                             <>
@@ -165,16 +216,16 @@ export function MarketTicker() {
                 </div>
 
                 {/* 1. Gram Price (The Big One) */}
-                <div className={`bg-gradient-to-br from-background to-muted border rounded-xl p-6 relative overflow-hidden group flex flex-col items-center text-center ${isOunceMode ? 'opacity-50 grayscale' : ''}`}>
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Scale className="w-16 h-16 text-primary" />
+                <div className={`bg-gradient-to-br from-background to-muted border rounded-2xl p-4 md:p-6 relative overflow-hidden group flex flex-col justify-center items-center text-center h-[110px] md:h-[125px] ${isOunceMode ? 'opacity-50 grayscale' : ''}`}>
+                    <div className="absolute top-0 right-0 p-3 md:p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Scale className="w-12 h-12 md:w-16 md:h-16 text-primary" />
                     </div>
 
                     <div className="relative z-10 w-full">
-                        <div className="flex flex-col items-center md:flex-row justify-center items-center mb-2 gap-2">
-                            <h3 className="text-muted-foreground font-medium order-2 md:order-1">عيار 24 (محسوب)</h3>
+                        <div className="flex flex-col items-center md:flex-row justify-center items-center mb-1 md:mb-2 gap-2">
+                            <h3 className="text-muted-foreground font-medium order-2 md:order-1 text-xs md:text-base">عيار 24 (محسوب)</h3>
                             {isGramMode && (
-                                <Button variant="ghost" size="icon" className="h-6 w-6 order-1 md:order-2 mb-2 md:mb-0" onClick={() => setEditingField(editingField === 'gram' ? null : 'gram')}>
+                                <Button variant="ghost" size="icon" className="h-5 w-5 md:h-6 md:w-6 order-1 md:order-2 mb-1 md:mb-0" onClick={() => setEditingField(editingField === 'gram' ? null : 'gram')}>
                                     <Pencil className="w-3 h-3" />
                                 </Button>
                             )}
@@ -184,22 +235,22 @@ export function MarketTicker() {
                             <div className="flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top-2">
                                 <Input
                                     autoFocus
-                                    className="h-10 text-2xl font-bold numeric w-32"
+                                    className="h-8 md:h-10 text-xl md:text-2xl font-bold numeric w-28 md:w-32"
                                     value={editGram}
                                     onChange={(e) => setEditGram(e.target.value)}
                                 />
-                                <Button size="icon" onClick={handleSave}><Check className="w-4 h-4" /></Button>
+                                <Button size="icon" className="h-8 w-8" onClick={handleSave}><Check className="w-4 h-4" /></Button>
                             </div>
                         ) : (
                             <div className="flex items-baseline justify-center gap-1 dir-ltr">
-                                <span className="text-3xl font-bold tracking-tight numeric text-foreground">
+                                <span className="text-2xl md:text-3xl font-bold tracking-tight numeric text-foreground">
                                     {formatNumber(displayGram)}
                                 </span>
-                                <span className="text-sm text-muted-foreground">ج.م</span>
+                                <span className="text-xs md:text-sm text-muted-foreground">ج.م</span>
                             </div>
                         )}
 
-                        <p className="text-[10px] text-muted-foreground mt-2 opacity-70">
+                        <p className="text-[10px] text-muted-foreground mt-1 md:mt-2 opacity-70">
                             {(isSubActive && priceMode === 'auto') ? 'يتم التحديث تلقائياً من السوق' :
                                 isGramMode ? 'تم تحديد السعر يدوياً' :
                                     'محسوب: (الأونصة × الدولار) ÷ 31.10'}
@@ -208,13 +259,13 @@ export function MarketTicker() {
                 </div>
 
                 {/* 2. Ounce Price */}
-                <div className={`border rounded-xl p-6 flex flex-col justify-center gap-4 relative overflow-hidden items-center text-center ${isOunceMode ? 'bg-background ring-1 ring-primary/20' : 'bg-muted/30'} ${isGramMode ? 'opacity-50 grayscale' : ''}`}>
-                    <div className="flex justify-center items-center mb-2 z-10 relative w-full gap-2">
-                        <span className="text-sm text-muted-foreground flex items-center justify-center md:justify-start gap-2">
-                            <Coins className="w-4 h-4" /> الأونصة (XAU)
+                <div className={`border rounded-2xl p-4 md:p-6 flex flex-col justify-center gap-2 md:gap-4 relative overflow-hidden items-center text-center h-[110px] md:h-[125px] ${isOunceMode ? 'bg-background ring-1 ring-primary/20' : 'bg-muted/30'} ${isGramMode ? 'opacity-50 grayscale' : ''}`}>
+                    <div className="flex justify-center items-center mb-1 md:mb-2 z-10 relative w-full gap-2">
+                        <span className="text-xs md:text-sm text-muted-foreground flex items-center justify-center md:justify-start gap-2">
+                            <Coins className="w-3 h-3 md:w-4 md:h-4" /> الأونصة (XAU)
                         </span>
                         {isOunceMode && (
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingField(editingField === 'ounce' ? null : 'ounce')}>
+                            <Button variant="ghost" size="icon" className="h-5 w-5 md:h-6 md:w-6" onClick={() => setEditingField(editingField === 'ounce' ? null : 'ounce')}>
                                 <Pencil className="w-3 h-3" />
                             </Button>
                         )}
@@ -223,27 +274,27 @@ export function MarketTicker() {
                     {editingField === 'ounce' ? (
                         <div className="flex items-center justify-center gap-2 z-10 relative">
                             <Input
-                                className="h-10 text-2xl font-bold numeric w-32"
+                                className="h-8 md:h-10 text-xl md:text-2xl font-bold numeric w-28 md:w-32"
                                 value={editOunce}
                                 onChange={(e) => setEditOunce(e.target.value)}
                             />
                             <Button size="icon" className="h-8 w-8" onClick={handleSave}><Check className="w-3 h-3" /></Button>
                         </div>
                     ) : (
-                        <div className="text-3xl font-bold numeric dir-ltr z-10 relative">
+                        <div className={`text-2xl md:text-3xl font-bold numeric dir-ltr z-10 relative transition-colors duration-200 ${isHighlight ? 'text-emerald-500' : ''}`}>
                             ${formatNumber(displayOunce)}
                         </div>
                     )}
                 </div>
 
                 {/* 3. USD Rate */}
-                <div className={`border rounded-xl p-6 flex flex-col justify-center gap-4 relative overflow-hidden items-center text-center ${isOunceMode ? 'bg-background ring-1 ring-primary/20' : 'bg-muted/30'} ${isGramMode ? 'opacity-50 grayscale' : ''}`}>
-                    <div className="flex justify-center items-center mb-2 z-10 relative w-full gap-2">
-                        <span className="text-sm text-muted-foreground flex items-center justify-center md:justify-start gap-2">
-                            <DollarSign className="w-4 h-4" /> سعر الدولار (USD)
+                <div className={`border rounded-2xl p-4 md:p-6 flex flex-col justify-center gap-2 md:gap-4 relative overflow-hidden items-center text-center h-[110px] md:h-[125px] ${isOunceMode ? 'bg-background ring-1 ring-primary/20' : 'bg-muted/30'} ${isGramMode ? 'opacity-50 grayscale' : ''}`}>
+                    <div className="flex justify-center items-center mb-1 md:mb-2 z-10 relative w-full gap-2">
+                        <span className="text-xs md:text-sm text-muted-foreground flex items-center justify-center md:justify-start gap-2">
+                            <DollarSign className="w-3 h-3 md:w-4 md:h-4" /> سعر الدولار (USD)
                         </span>
                         {isOunceMode && (
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingField(editingField === 'usd' ? null : 'usd')}>
+                            <Button variant="ghost" size="icon" className="h-5 w-5 md:h-6 md:w-6" onClick={() => setEditingField(editingField === 'usd' ? null : 'usd')}>
                                 <Pencil className="w-3 h-3" />
                             </Button>
                         )}
@@ -252,14 +303,14 @@ export function MarketTicker() {
                     {editingField === 'usd' ? (
                         <div className="flex items-center justify-center gap-2 z-10 relative">
                             <Input
-                                className="h-10 text-2xl font-bold numeric w-32"
+                                className="h-8 md:h-10 text-xl md:text-2xl font-bold numeric w-28 md:w-32"
                                 value={editUsd}
                                 onChange={(e) => setEditUsd(e.target.value)}
                             />
                             <Button size="icon" className="h-8 w-8" onClick={handleSave}><Check className="w-3 h-3" /></Button>
                         </div>
                     ) : (
-                        <div className="text-3xl font-bold numeric dir-ltr z-10 relative">
+                        <div className="text-2xl md:text-3xl font-bold numeric dir-ltr z-10 relative">
                             {formatNumber(displayUsd)}
                         </div>
                     )}

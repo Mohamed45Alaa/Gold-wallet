@@ -152,7 +152,7 @@ export function AutoModeGate() {
                         <PartyPopper className="w-24 h-24 text-yellow-400" />
                     </div>
                 </div>
-                <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 mb-4 animate-pulse">
+                <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 mb-4 animate-pulse leading-relaxed pb-2">
                     مرحباً بك في النخبة!
                 </h1>
                 <p className="text-xl text-yellow-100/80 mb-8 max-w-md leading-relaxed">
@@ -242,16 +242,16 @@ export function AutoModeGate() {
         if (!currentUser) return null; // Hide if not logged in
 
         return (
-            <div className="fixed top-4 right-4 z-[999999] md:w-auto w-[92%] md:right-4 left-1/2 md:left-auto md:translate-x-0 -translate-x-1/2">
+            <div className="fixed top-4 right-4 z-[999999] md:w-auto w-[92%] md:right-4 left-1/2 md:left-auto md:translate-x-0 -translate-x-1/2 flex justify-end">
                 <Button
                     onClick={() => { setIsOpen(true); setPassword(''); }} // Clear password on open
-                    className="w-full md:w-[220px] bg-background/80 hover:bg-background/90 backdrop-blur border shadow-xl gap-2 h-12 rounded-full group transition-all"
+                    className="w-auto md:w-[220px] bg-background/80 hover:bg-background/90 backdrop-blur border shadow-xl gap-2 h-10 md:h-12 rounded-full group transition-all px-4"
                     variant="outline"
                 >
                     <div className="bg-muted p-1 rounded-full group-hover:bg-primary/20 transition-colors">
-                        <Lock className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
+                        <Lock className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground group-hover:text-primary" />
                     </div>
-                    <span className="font-semibold text-muted-foreground group-hover:text-foreground">تفعيل الوضع التلقائي</span>
+                    <span className="font-semibold text-xs md:text-sm text-muted-foreground group-hover:text-foreground">تفعيل الوضع التلقائي</span>
                 </Button>
             </div>
         );

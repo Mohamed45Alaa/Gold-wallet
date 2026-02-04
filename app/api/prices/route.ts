@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 
 export const dynamic = 'force-dynamic'; // No caching
-export const revalidate = 0;
+export const revalidate = 30;
 
 export async function GET() {
     try {
@@ -11,13 +11,13 @@ export async function GET() {
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
                 },
-                cache: 'no-store'
+                next: { revalidate: 30 }
             }),
             fetch('https://gold-price-live.com/view/sagha-usd', {
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
                 },
-                cache: 'no-store'
+                next: { revalidate: 30 }
             })
         ]);
 
