@@ -56,8 +56,16 @@ export function MarketTicker() {
         }
     }, [manualGramPrice, manualUsdPrice, manualXauPrice, editingField]);
 
-    // Unified 30s Timer
+    // Unified 30s Timer - ONLY when Auto Mode is active
     useEffect(() => {
+        if (!isSubActive) {
+            // Reset state when manual mode
+            setTimeLeft(30);
+            setIsHighlight(false);
+            setIsFetching(false);
+            return;
+        }
+
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
                 if (prev > 0) return prev - 1;
@@ -65,10 +73,13 @@ export function MarketTicker() {
             });
         }, 1000);
         return () => clearInterval(timer);
-    }, []);
+    }, [isSubActive]);
 
-    // Fetch and Update at 0s
+    // Fetch and Update at 0s - ONLY in Auto Mode
     useEffect(() => {
+        // Guard: Do nothing if manual mode
+        if (!isSubActive) return;
+
         if (timeLeft === 0 && !isFetching) {
             setIsFetching(true);
             fetch('/api/prices')
@@ -93,7 +104,7 @@ export function MarketTicker() {
                     setTimeLeft(30); // Reset even on error
                 });
         }
-    }, [timeLeft, isFetching, setMarketData]);
+    }, [timeLeft, isFetching, setMarketData, isSubActive]);
 
     const handleSave = async () => {
         if (!currentUser) return;
