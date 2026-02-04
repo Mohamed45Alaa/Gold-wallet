@@ -7,7 +7,7 @@ import { useStore } from '@/lib/store';
 import { subscribeToGoldBars, subscribeToCashEntries, subscribeToSettings, subscribeToMeta } from '@/lib/services';
 
 export function RealtimeInitializer() {
-    const { setGoldBars, setCashEntries, setManualGramPrice, setMarketData, setHydrated, setUser, setUserMeta } = useStore();
+    const { setGoldBars, setCashEntries, setSettings, setMarketData, setHydrated, setUser, setUserMeta } = useStore();
 
     // 1. Auth & Firestore Subscriptions
     useEffect(() => {
@@ -28,7 +28,13 @@ export function RealtimeInitializer() {
                     setCashEntries(entries);
                 });
                 unsubscribeSettings = subscribeToSettings(user.uid, (settings) => {
-                    setManualGramPrice(settings.manualGramPrice);
+                    setSettings({
+                        priceMode: settings.priceMode,
+                        manualGramPrice: settings.manualGramPrice,
+                        manualXauPrice: settings.manualXauPrice ?? null,
+                        manualUsdPrice: settings.manualUsdPrice ?? null,
+                        subscription: settings.subscription
+                    });
                 });
 
                 // Subscribe to Meta (Onboarding)
@@ -42,7 +48,13 @@ export function RealtimeInitializer() {
                 // Clear Data
                 setGoldBars([]);
                 setCashEntries([]);
-                setManualGramPrice(null);
+                setSettings({
+                    priceMode: 'manualGram',
+                    manualGramPrice: null,
+                    manualXauPrice: null,
+                    manualUsdPrice: null,
+                    subscription: { active: false }
+                });
 
                 // CRITICAL: Render FULL Dashboard (Static Zero State)
                 // DO NOT subscribe to anything (Private data is private)
@@ -61,7 +73,7 @@ export function RealtimeInitializer() {
             if (unsubscribeCash) unsubscribeCash();
             if (unsubscribeSettings) unsubscribeSettings();
         };
-    }, [setGoldBars, setCashEntries, setManualGramPrice, setHydrated, setUser, setUserMeta]);
+    }, [setGoldBars, setCashEntries, setSettings, setHydrated, setUser, setUserMeta]);
 
     // 2. Market Data Polling (5s)
     useEffect(() => {
@@ -70,7 +82,7 @@ export function RealtimeInitializer() {
                 const res = await fetch('/api/prices');
                 const data = await res.json();
                 if (data.status === 'success') {
-                    setMarketData(data.xauPrice, data.usdRate);
+                    setMarketData(data.xauPrice, data.usdRate, data.saghaPrice || 0);
                 }
             } catch (error) {
                 console.error("Price fetch failed", error);

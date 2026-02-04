@@ -36,8 +36,20 @@ export interface CashEntry {
     date: string;
 }
 
+export interface Subscription {
+    active: boolean;
+    startDate: Timestamp;
+    endDate: Timestamp;
+    plan: string;
+    activatedBy?: string;
+}
+
 export interface GlobalSettings {
+    priceMode: 'manualGram' | 'usdOunce' | 'auto';
     manualGramPrice: number | null;
+    manualXauPrice?: number | null;
+    manualUsdPrice?: number | null;
+    subscription?: Subscription;
 }
 
 // Collections
@@ -141,17 +153,38 @@ export const subscribeToSettings = (userId: string, callback: (settings: GlobalS
         } else {
             // Create default if missing - ONLY if auth user
             if (userId) {
-                setDoc(ref, { manualGramPrice: null }).catch(e => console.error("Auto-create settings failed", e));
+                const defaultSettings: GlobalSettings = {
+                    priceMode: 'manualGram',
+                    manualGramPrice: null,
+                    manualXauPrice: null,
+                    manualUsdPrice: null,
+                    subscription: {
+                        active: false,
+                        startDate: Timestamp.now(),
+                        endDate: Timestamp.now(),
+                        plan: 'free'
+                    }
+                };
+                setDoc(ref, defaultSettings).catch(e => console.error("Auto-create settings failed", e));
+                callback(defaultSettings);
+            } else {
+                callback({ priceMode: 'manualGram', manualGramPrice: null });
             }
-            callback({ manualGramPrice: null });
         }
     });
 };
 
-export const updateManualGramPrice = async (userId: string, price: number | null) => {
-    // STRICT: users/{userId}/settings/global
+export const updateSettings = async (userId: string, data: Partial<GlobalSettings>) => {
     const ref = doc(db, "users", userId, COLLECTION_SETTINGS, 'global');
-    await setDoc(ref, { manualGramPrice: price }, { merge: true });
+    await setDoc(ref, data, { merge: true });
+};
+
+export const updateManualGramPrice = async (userId: string, price: number | null) => {
+    await updateSettings(userId, { manualGramPrice: price });
+};
+
+export const updateManualXauPrice = async (userId: string, price: number | null) => {
+    await updateSettings(userId, { manualXauPrice: price });
 };
 
 

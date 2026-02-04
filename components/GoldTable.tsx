@@ -114,7 +114,7 @@ export function GoldTable() {
 
     return (
         <div id="gold-section" className="w-full space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <h3 className="text-xl font-semibold">سبائك الذهب</h3>
 
                 <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
@@ -126,7 +126,7 @@ export function GoldTable() {
                             }
                             setIsAddOpen(true);
                         }}
-                        className="gap-2"
+                        className="gap-2 w-full md:w-auto"
                     >
                         <Plus className="w-4 h-4" /> إضافة سبيكة
                     </Button>
@@ -275,50 +275,63 @@ export function GoldTable() {
 
                     return (
                         <div key={bar.id} className={`p-4 rounded-xl border bg-card ${bar.isSold ? 'opacity-70 bg-muted/30' : ''}`}>
-                            <div className="flex justify-between items-center mb-4 border-b pb-2">
-                                <span className="text-muted-foreground text-sm font-medium">التاريخ</span>
-                                <span className="numeric font-bold">{formatDateDDMMYYYY(bar.date)}</span>
+                            <div className="flex flex-col items-center mb-4 border-b pb-2 gap-1 text-center">
+                                <span className="numeric font-bold text-lg text-primary">{formatDateDDMMYYYY(bar.date)}</span>
+                                <span className="text-xs text-muted-foreground font-medium">تاريخ الشراء</span>
                             </div>
-                            <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
-                                <span className="text-muted-foreground">الوزن</span>
-                                <span className="numeric font-bold text-left dir-ltr">{formatNumber(bar.weight, { maximumFractionDigits: 2 })}g</span>
-                                <span className="text-muted-foreground">صافي الذهب</span>
-                                <div className="flex justify-end items-baseline dir-ltr gap-1" dir="ltr">
-                                    <span className="text-[10px] text-muted-foreground opacity-70">ج.م</span>
-                                    <span className="numeric font-bold">{formatNumber(netCost, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <div className="flex flex-col gap-3 text-sm">
+                                <div className="flex justify-between items-center border-b border-muted/30 pb-2 mb-1">
+                                    <span className="numeric font-bold dir-ltr text-lg">{formatNumber(bar.weight, { maximumFractionDigits: 2 })}g</span>
+                                    <span className="text-xs text-muted-foreground">الوزن</span>
                                 </div>
-                                <span className="text-muted-foreground">القيمة</span>
-                                <div className="flex justify-end items-baseline dir-ltr">
-                                    {bar.isSold ? (
-                                        <div className="flex items-center gap-1 dir-ltr opacity-70" dir="ltr">
-                                            <span className="text-[10px] text-muted-foreground line-through decoration-transparent">ج.م</span>
-                                            <span className="numeric font-medium text-muted-foreground line-through decoration-transparent">{formatNumber(currentValue, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                            <span className="text-[10px] text-muted-foreground no-underline">(مباع)</span>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-baseline gap-1 dir-ltr" dir="ltr">
-                                            <span className="text-[10px] text-muted-foreground opacity-70">ج.م</span>
-                                            <span className="numeric font-bold text-foreground">{formatNumber(currentValue, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                        </div>
-                                    )}
+
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-baseline dir-ltr gap-1" dir="ltr">
+                                        <span className="text-[10px] text-muted-foreground opacity-70">ج.م</span>
+                                        <span className="numeric font-bold text-base">{formatNumber(netCost, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">صافي الذهب</span>
                                 </div>
-                                <span className="text-muted-foreground">الربح/الخسارة</span>
-                                <div className={`flex justify-end items-baseline dir-ltr gap-1 font-bold ${isProfit ? 'text-profit' : 'text-loss'}`} dir="ltr">
-                                    <span className="text-[10px] opacity-70">ج.م</span>
-                                    <span className="numeric">{isProfit ? '+' : ''}{formatNumber(pl, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-baseline dir-ltr">
+                                        {bar.isSold ? (
+                                            <div className="flex items-center gap-2 opacity-70" dir="ltr">
+                                                <span className="text-[10px] text-muted-foreground no-underline">(مباع)</span>
+                                                <div className="flex items-baseline gap-1">
+                                                    <span className="text-[10px] text-muted-foreground line-through decoration-transparent">ج.م</span>
+                                                    <span className="numeric font-medium text-muted-foreground line-through decoration-transparent">{formatNumber(currentValue, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-baseline gap-1 dir-ltr" dir="ltr">
+                                                <span className="text-[10px] text-muted-foreground opacity-70">ج.م</span>
+                                                <span className="numeric font-bold text-foreground text-base">{formatNumber(currentValue, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">القيمة الحالية</span>
+                                </div>
+
+                                <div className="flex justify-between items-center">
+                                    <div className={`flex items-baseline dir-ltr gap-1 font-bold ${isProfit ? 'text-profit' : 'text-loss'}`} dir="ltr">
+                                        <span className="text-[10px] opacity-70">ج.م</span>
+                                        <span className="numeric text-base">{isProfit ? '+' : ''}{formatNumber(pl, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">الربح/الخسارة</span>
                                 </div>
                             </div>
-                            <div className="flex justify-end gap-3 mt-4 pt-2 border-t">
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openView(bar)}>
-                                    <Eye className="w-4 h-4 text-primary" />
+                            <div className="flex justify-center gap-4 mt-6 pt-2 border-t">
+                                <Button variant="outline" size="icon" className="h-10 w-10 rounded-full" onClick={() => openView(bar)}>
+                                    <Eye className="w-5 h-5 text-primary" />
                                 </Button>
                                 {!bar.isSold && (
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setSellId(bar.id)}>
-                                        <Gavel className="w-4 h-4 text-amber-500" />
+                                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-full border-amber-500/30 hover:bg-amber-500/10" onClick={() => setSellId(bar.id)}>
+                                        <Gavel className="w-5 h-5 text-amber-500" />
                                     </Button>
                                 )}
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleDelete(bar.id)}>
-                                    <Trash2 className="w-4 h-4 text-destructive/50 hover:text-destructive" />
+                                <Button variant="outline" size="icon" className="h-10 w-10 rounded-full border-destructive/30 hover:bg-destructive/10" onClick={() => handleDelete(bar.id)}>
+                                    <Trash2 className="w-5 h-5 text-destructive" />
                                 </Button>
                             </div>
                         </div>
