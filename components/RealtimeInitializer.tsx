@@ -75,28 +75,5 @@ export function RealtimeInitializer() {
         };
     }, [setGoldBars, setCashEntries, setSettings, setHydrated, setUser, setUserMeta]);
 
-    // 2. Market Data Polling (5s)
-    // 2. Market Data Polling (DISABLED - Relying on MarketTicker 30s)
-    /*
-    useEffect(() => {
-        const fetchGoldPrice = async () => {
-            try {
-                const res = await fetch('/api/prices');
-                const data = await res.json();
-                if (data.status === 'success') {
-                    setMarketData(data.xauPrice, data.usdRate, data.saghaPrice || 0);
-                }
-            } catch (error) {
-                console.error("Price fetch failed", error);
-            }
-        };
-
-        fetchGoldPrice(); // Initial
-        const interval = setInterval(fetchGoldPrice, 5000);
-
-        return () => clearInterval(interval);
-    }, [setMarketData]);
-    */
-
     return null; // Headless component
 }

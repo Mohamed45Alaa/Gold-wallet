@@ -56,48 +56,44 @@ export function MarketTicker() {
         }
     }, [manualGramPrice, manualUsdPrice, manualXauPrice, editingField]);
 
-    // Timer Loop
+    // Unified 30s Timer
     useEffect(() => {
         const timer = setInterval(() => {
-            setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+            setTimeLeft((prev) => {
+                if (prev > 0) return prev - 1;
+                return prev;
+            });
         }, 1000);
         return () => clearInterval(timer);
     }, []);
 
-    // 1. Trigger Fetch at 5s remaining
+    // Fetch and Update at 0s
     useEffect(() => {
-        if (timeLeft === 5 && !isFetching) {
+        if (timeLeft === 0 && !isFetching) {
             setIsFetching(true);
             fetch('/api/prices')
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        setNextData(data);
+                        // Update both prices simultaneously
+                        setMarketData(data.xauPrice, data.usdRate, data.saghaPrice || 0);
+
+                        // Flash animation
+                        setIsHighlight(true);
+                        setTimeout(() => setIsHighlight(false), 1000);
+
+                        // Reset timer AFTER successful update
+                        setTimeLeft(30);
                     }
                     setIsFetching(false);
                 })
                 .catch(err => {
-                    console.error("Prefetch failed", err);
+                    console.error("Price fetch failed", err);
                     setIsFetching(false);
+                    setTimeLeft(30); // Reset even on error
                 });
         }
-    }, [timeLeft, isFetching]);
-
-    // 2. Apply Update & Reset at 0s
-    useEffect(() => {
-        if (timeLeft === 0 && nextData) {
-            // Commit the buffered data
-            setMarketData(nextData.xauPrice, nextData.usdRate, nextData.saghaPrice || 0);
-
-            // Visual Update
-            setTimeLeft(30);
-            setIsHighlight(true);
-
-            // Clean up
-            setNextData(null);
-            setTimeout(() => setIsHighlight(false), 1000);
-        }
-    }, [timeLeft, nextData, setMarketData]);
+    }, [timeLeft, isFetching, setMarketData]);
 
     const handleSave = async () => {
         if (!currentUser) return;
@@ -281,7 +277,7 @@ export function MarketTicker() {
                             <Button size="icon" className="h-8 w-8" onClick={handleSave}><Check className="w-3 h-3" /></Button>
                         </div>
                     ) : (
-                        <div className={`text-2xl md:text-3xl font-bold numeric dir-ltr z-10 relative transition-all duration-300 px-3 py-1 rounded-lg ${isHighlight ? 'bg-emerald-50 text-emerald-600' : ''}`}>
+                        <div className={`text-2xl md:text-3xl font-bold numeric dir-ltr z-10 relative transition-all duration-300 px-3 py-1 rounded-lg ${isHighlight ? 'bg-emerald-50 text-emerald-600 price-flash' : ''}`}>
                             ${formatNumber(displayOunce)}
                         </div>
                     )}
@@ -310,7 +306,7 @@ export function MarketTicker() {
                             <Button size="icon" className="h-8 w-8" onClick={handleSave}><Check className="w-3 h-3" /></Button>
                         </div>
                     ) : (
-                        <div className={`text-2xl md:text-3xl font-bold numeric dir-ltr z-10 relative transition-all duration-300 px-3 py-1 rounded-lg ${isHighlight ? 'bg-emerald-50 text-emerald-600' : ''}`}>
+                        <div className={`text-2xl md:text-3xl font-bold numeric dir-ltr z-10 relative transition-all duration-300 px-3 py-1 rounded-lg ${isHighlight ? 'bg-emerald-50 text-emerald-600 price-flash' : ''}`}>
                             {formatNumber(displayUsd)}
                         </div>
                     )}
